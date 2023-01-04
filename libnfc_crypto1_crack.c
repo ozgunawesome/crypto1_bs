@@ -662,7 +662,21 @@ int main (int argc, const char * argv[]) {
     if(fp){
         fclose(fp);
     }
+
+    while(!stop_collection) {
+        ;
+    }
+
+    printf("Stopping NFC device.\n");
+    nfc_abort_command(pnd);
+    nfc_device_set_property_bool(pnd, NP_INFINITE_SELECT, true);
+    nfc_device_set_property_bool(pnd, NP_HANDLE_CRC, true);
+    nfc_device_set_property_bool(pnd, NP_HANDLE_PARITY, true);
+    nfc_device_set_property_bool(pnd, NP_ACTIVATE_FIELD, true);
+    nfc_device_set_property_bool(pnd, NP_AUTO_ISO14443_4, true);
     nfc_close(pnd);
+    nfc_exit(context);
+    printf("Stopped NFC device.\n");
 
     if(!space){
         space = craptev1_get_space(nonces, 95, uid);
@@ -730,6 +744,17 @@ int main (int argc, const char * argv[]) {
         return 1;
     } else {
         printf("Found key: %012"PRIx64"\n", found_key);
+        if (argc==7) {
+            FILE *fpKey = NULL;
+            fpKey = fopen(argv[6], "a");
+            if (fpKey) {
+                fprintf(fpKey, "%012"PRIx64"\r\n", found_key);
+                fclose(fpKey);
+            } else {
+                fprintf(stderr, "Cannot open: %s, exiting\n", argv[6]);
+                return 1;
+            }
+        }
     }
     printf("Tested %"llu" states\n", total_states_tested);
 
